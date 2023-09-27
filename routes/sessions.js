@@ -1,10 +1,11 @@
 const express = require('express');
 const router  = express.Router();
-const getSessions = require('../controllers/sessioncontroller')
+const getsessions = require('../controllers/sessioncontroller');
+const authorization = require('../middlewares/authorization')
 
 
-router.get('/',);
-router.post('/',);
+router.get('/',authorization,getsessions);
+//router.post('/',);
 
 
 module.exports=router;
