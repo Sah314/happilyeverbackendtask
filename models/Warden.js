@@ -18,6 +18,10 @@ const sessions = new mongoose.Schema({
         enum:['Pending','Booked','Completed','Unattended'],
         default:'Pending'
     }
+    ,
+    bookedby:{
+        type:String
+    }
 })
 
 
