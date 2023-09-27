@@ -4,21 +4,21 @@ require("dotenv").config('.env');
 const bcrypt = require('bcrypt')
 const signup=async(req,res)=>{
     try {
-        const {name,uniID,password}=req.body;
+        const {name,uniID,password,sessions}=req.body;
         const wardn = await warden.findOne({uniID:uniID}); 
         if(!wardn){
             const salt =await bcrypt.genSalt(12);
             const newpass =await bcrypt.hash(password,salt);
             const newwarden = await warden.create({
-                name : name ,  uniID : uniID , password : newpass
+                name : name ,  uniID : uniID , password : newpass,sessions:sessions
             })
-            res.status(201).json(newwarden);
+            return res.status(201).json(newwarden);
         }
-        res.status(401).json({'error':"The warden already exists"});
+        return res.status(401).json({'error':"The warden already exists"});
     } catch (error) {
-        res.status(501).json({"error":error});
+        return res.status(501).json({"error":error});
     }
-    console.log(signup);
+    //console.log(signup);
 }
 const login=async(req,res)=>{
 
