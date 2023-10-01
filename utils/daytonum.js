@@ -2,7 +2,7 @@
 
 
 const dayToNum=(day)=>{
-    const dict = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+    const dict = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     //console.log(dict.findIndex((d)=>d===day))
     return dict.findIndex((d)=>d===day);
 }

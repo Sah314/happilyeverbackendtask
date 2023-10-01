@@ -28,23 +28,28 @@ try {
     //console.log(endTime);
     const t1 = endTime.split(" ")[0];
     const t2 = endTime.split(" ")[1];
+    const hr = t1.split(":")[0];
+    const min = t1.split(":")[1];
+    
     if(t2==="AM"){
-        time = t1.slice(0,2);
+            time = parseInt(hr)*60+parseInt(min);
     }
     else{
-        time = parseInt(t1.slice(0,2))+12;
-        console.log(time);
+            time =  time = (parseInt(hr)+12)*60+parseInt(min);
     }
-    // console.log(t1,t2)
+     //console.log(dayToNum(day))
+     //console.log(sessdate.getMinutes());
+     console.log(time);
     // Parse the datetime string into a JavaScript Date object
     const sessdate = new Date();
-//console.log()
-    if(sessdate.getDay()<dayToNum(day)+1){
+//console.log(sessdate.getHours());
+    if(sessdate.getDay()<dayToNum(day)){
         session.push(ele);
-        //console.log(sessdate.getHours());
     }
-    else if(sessdate.getDay()==dayToNum(day)+1){
-        if(time>sessdate.getHours()){
+    else if(sessdate.getDay()==dayToNum(day)){
+        const sesstime = (sessdate.getHours())*60 +sessdate.getMinutes();
+        console.log(sesstime);
+        if(time>sesstime){
             session.push(ele);
         }
     }  
