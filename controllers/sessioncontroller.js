@@ -1,28 +1,59 @@
 const warden = require('../models/Warden');
+const session = require('../models/Sessions');
 const dayToNum = require('../utils/daytonum');
 require("dotenv").config('.env');
 
-const getSessions=async(req,res)=>{
+const addSession = async(req,res)=>{
     try {
-        const sess = await warden.find({},"name sessions");
-        const sessions =[];
-        sess.forEach((ele)=>{if(ele.sessions.length!==0) sessions.push(ele)})
-        console.log(sessions);
-        res.json(sessions);
-    } catch (error) {
-        res.status(501);
+        const {wardenID,sessionday,starttime,endtime} = req.body;
+
+        const newsession = await session.create({
+            wardenID:wardenID,sessionday:sessionday,
+            starttime:starttime,
+            endtime:endtime
+        });
+        await newsession.populate("wardenID");
+        if(!newsession){
+console.log("sess")
+        }
+        res.json(newsession)
+    } catch (err) {
+        res.status(501).json("error");
     }
 }
 
+
+
+const getSessions = async (req, res) => {
+    try {
+      // Fetch all sessions
+      const sessions = await session.find({isBooked:false});
+      // Populate the wardenBID and bookedByID fields with corresponding warden details
+      await session.populate(sessions, [
+        { path: 'wardenID', select: 'name' },
+        { path: 'bookedByID', select: 'name' },
+      ]);
+  
+      res.json({"available sessions":sessions});
+    } catch (error) {
+      res.status(501).json({ error: 'Server error' });
+    }
+  };
+  
+
 const getMySessions = async(req,res)=>{
 try {
-    const uniID = req.user.userId;
-    const mysess = await warden.find({uniID:uniID},"sessions");
-    const session=[]
+    const myID = req.user.Id;
+    //console.log(myID);
+    const mysess = await session.find({wardenID:myID});
+   
+    //conole.log(sessions);
+
+    const sess=[]
     //const timenow = Date.now();
    // console.log()
-    mysess[0].sessions.forEach((ele)=>{
-    var day =ele.day;
+    mysess.forEach((ele)=>{
+    var day =ele.sessionday;
     var endTime = ele.endtime;
     var time;
     //console.log(endTime);
@@ -37,42 +68,38 @@ try {
     else{
             time =  time = (parseInt(hr)+12)*60+parseInt(min);
     }
-     //console.log(dayToNum(day))
-     //console.log(sessdate.getMinutes());
      console.log(time);
-    // Parse the datetime string into a JavaScript Date object
+
     const sessdate = new Date();
 //console.log(sessdate.getHours());
     if(sessdate.getDay()<dayToNum(day)){
-        session.push(ele);
+        sess.push(ele);
     }
     else if(sessdate.getDay()==dayToNum(day)){
         const sesstime = (sessdate.getHours())*60 +sessdate.getMinutes();
         console.log(sesstime);
         if(time>sesstime){
-            session.push(ele);
+            sess.push(ele);
         }
     }  
   })
-    res.json(session);
+    res.json(sess);
 
 } catch (error) {
     res.status(501).json({"message":"error"})
 }
 }
+
 const bookSession=async(req,res)=>{
-    const uniID = req.user.userId;
-    const {id,dayid} = req.params;
-    const updatedData = await warden.updateOne(
-        { uniID: id, "sessions._id": dayid }, 
-        {
-          $set: {
-            "sessions.$.bookedby": uniID, 
-            "sessions.$.status": "Booked",   
-          },
-        }
-      );
+    const bookedByID = req.user.Id;
+    console.log(bookedByID);
+    const {sessionId} = req.params;
+    const updatedData = await session.findById(sessionId);
+    updatedData.bookedByID=bookedByID;
+    updatedData.isBooked=true;
+      await updatedData.populate(["bookedByID","wardenID"]);
+      await updatedData.save();
     res.json(updatedData);  
     }
 
-module.exports = ({getSessions,getMySessions,bookSession});
+module.exports = ({getSessions,getMySessions,bookSession,addSession});
