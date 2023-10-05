@@ -26,9 +26,11 @@ console.log("sess")
 
 const getSessions = async (req, res) => {
     try {
-      // Fetch all sessions
+      
       const sessions = await session.find({isBooked:false});
-      // Populate the wardenBID and bookedByID fields with corresponding warden details
+      if(!sessions){
+        return res.status(404).json({"error":"no free sessions available. Please check after sometime"});
+      }
       await session.populate(sessions, [
         { path: 'wardenID', select: 'name' },
         { path: 'bookedByID', select: 'name' },
@@ -46,7 +48,9 @@ try {
     const myID = req.user.Id;
     //console.log(myID);
     const mysess = await session.find({wardenID:myID});
-   
+   if(!mysess){
+    return res.status(404).json({"error":"No session available for this user"})
+   }
     //conole.log(sessions);
 
     const sess=[]
@@ -95,6 +99,9 @@ const bookSession=async(req,res)=>{
     console.log(bookedByID);
     const {sessionId} = req.params;
     const updatedData = await session.findById(sessionId);
+    if(!updatedData){
+      return res.status(404).json({"message":"This session does not exist"});
+    }
     updatedData.bookedByID=bookedByID;
     updatedData.isBooked=true;
       await updatedData.populate(["bookedByID","wardenID"]);
